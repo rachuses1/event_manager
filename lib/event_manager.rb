@@ -62,21 +62,25 @@ contents.each do |row|
   
   form_letter = erb_template.result(binding)
 
-  save_thank_you_letter(id,form_letter)
+  # save_thank_you_letter(id,form_letter)
 
-  phone = row[:HomePhone]
+  phone = row[:homephone]
+  
   check_phone = phone.tr('^0-9', '')
+  
   if check_phone.length < 10
-    0000000000
+    check_phone = '0000000000'
   elsif check_phone.length == 10
     check_phone
-  elsif check_phone.length == 11 && check_phone.char == "1"
-    check_phone.slice(1, 10)
-  elsif check_phone.length == 11 && check_phone.char != "1"
-    0000000000
+  elsif check_phone.length == 11 && check_phone[0] == "1"
+    check_phone = check_phone.slice(1, 10)
+  elsif check_phone.length == 11 && check_phone[0] != "1"
+    '0000000000'
   elsif check_phone.length > 11
-    0000000000
+    '0000000000'
   end
+
+  puts check_phone
 
 end
 
