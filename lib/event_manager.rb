@@ -1,6 +1,7 @@
 require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
+require 'date'
 
 def clean_zipcode(zipcode)
   # if zipcode.nil?
@@ -31,7 +32,7 @@ def legislators_by_zipcode(zipcode)
   end
 end
 
-def save_thank_you_letter(id,form_letter)
+def save_thank_you_letter(id, form_letter)
   Dir.mkdir('output') unless Dir.exist?('output')
 
   filename = "output/thanks_#{id}.html"
@@ -48,14 +49,14 @@ def check_phone(phone)
     check_phone = '0000000000'
   elsif check_phone.length == 10
     check_phone
-  elsif check_phone.length == 11 && check_phone[0] == "1"
+  elsif check_phone.length == 11 && check_phone[0] == '1'
     check_phone = check_phone.slice(1, 10)
-  elsif check_phone.length == 11 && check_phone[0] != "1"
+  elsif check_phone.length == 11 && check_phone[0] != '1'
     '0000000000'
   elsif check_phone.length > 11
     '0000000000'
   end
-  puts check_phone
+  # puts check_phone
 end
 
 puts 'EventManager initialized.'
@@ -68,25 +69,32 @@ contents = CSV.open(
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 
+time_count = []
+
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
 
   zipcode = clean_zipcode(row[:zipcode])
-  
   legislators = legislators_by_zipcode(zipcode)
-  
   form_letter = erb_template.result(binding)
 
   # save_thank_you_letter(id,form_letter)
 
   phone = row[:homephone]
-  
   check_phone(phone)
 
+  date = row[:regdate].split('')[0]
+  month = date.split('/')[0].to_i
+  day = date.split('/')[1].to_i
+  year = ('20' + date.split('/')[2]).to_i
+
+  time = row[:regdate].split(' ')[1]
+  hour = time.split(':')[0].to_i
+  minute = time.split(':')[1].to_i
+
+  registered = DateTime.new(year, month, day, hour, minute, 0)
+  time_count.push(registered.hour)
 end
 
-
-
-
-
+puts time_count.sort
